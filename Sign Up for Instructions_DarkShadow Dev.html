@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Up for Instructions | DarkShadow Dev</title>
+<link rel="icon" type="image/png" href="Website-Guide.png">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --panel: #111;
+    --text: #eee;
+    --accent: #00ffff;
+    --accent2: #ff00ff;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top left, #111, #000);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  h1 {
+    font-size: 2em;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent2);
+  }
+
+  form {
+    background: var(--panel);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #000;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  input, textarea {
+    background: #1c1c1c;
+    border: 2px solid var(--accent2);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 10px;
+    font-size: 1em;
+    outline: none;
+    resize: none;
+    transition: 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  button {
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: transform 0.2s;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--accent);
+  }
+
+  footer {
+    margin-top: 20px;
+    font-size: 0.8em;
+    color: #888;
+  }
+        /* Hide default scrollbar */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+</style>
+</head>
+<body>
+
+  <h1>Sign Up for Instructions</h1>
+  <p>od 4 do 5km/h</p>
+  <p>Monako od 16-18 pon-uto</p>
+  <p>nesto ne jasno ili imate pitanje vezano za cijenu ili vrijeme pitjte u poruci.</p>
+
+  <form id="signupForm">
+    <input type="text" id="name" name="name" placeholder="Your Name" required>
+    <input type="email" id="email" name="email" placeholder="Your Email" required>
+    <textarea id="message" name="message" rows="4" placeholder="Your Message (optional)"></textarea>
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <footer>© 2025 DarkShadow Dev</footer>
+
+<script>
+document.getElementById("signupForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const message = document.getElementById("message").value.trim();
+
+  if (name && email) {
+    // Replace with your email address below
+    const targetEmail = "ahemd.hasidic14@gmail.com";
+    const subject = encodeURIComponent("New Instruction Signup");
+    const body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nMessage: " + message);
+
+    window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+  } else {
+    alert("Please fill in your name and email before submitting.");
+  }
+});
+</script>
+
+</body>
+</html>
