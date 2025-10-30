@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/png" href="Website-Guide.png" />
+<title>Voice → Text (Detect / English / Code) | DarkShadow Dev</title>
+<style>
+  :root{
+    --bg:#070707;
+    --panel:#0f0f12;
+    --muted:#9aa0a6;
+    --text:#e9f6f6;
+    --accent:#00e5ff;
+    --accent2:#ff4cf0;
+    --glass: rgba(255,255,255,0.03);
+    --success:#4df08a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: radial-gradient(circle at 10% 10%, #0a0a0a 0%, #030303 45%);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+  .card{
+    width:100%;
+    max-width:980px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2));
+    border-radius:12px;
+    padding:18px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+  }
+  header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  header h1{margin:0;font-size:1.15rem;color:var(--accent)}
+  .row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  label{font-size:0.85rem;color:var(--muted)}
+  select,input[type="checkbox"]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--panel);color:var(--text)}
+  button{
+    padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600;
+    background:linear-gradient(90deg,var(--accent2),var(--accent)); color:#061018;
+    box-shadow:0 6px 18px rgba(0,0,0,0.6);
+  }
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.04)}
+  .status{font-size:0.85rem;color:var(--muted);margin-left:8px}
+  textarea{
+    width:100%;min-height:360px;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.12));color:var(--text);
+    resize:vertical;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+    font-size:0.95rem;
+  }
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .small{font-size:0.85rem;color:var(--muted)}
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px;flex-wrap:wrap}
+  .chip{padding:6px 10px;border-radius:999px;background:var(--glass);border:1px solid rgba(255,255,255,0.02);font-size:0.85rem}
+  .danger{background:linear-gradient(90deg,#ff6b9b,#ff4cf0);color:#05131a}
+  @media (max-width:640px){ .row{flex-direction:column;align-items:stretch} header{flex-direction:column;align-items:flex-start} }
+        /* Hide default scrollbar */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+</style>
+</head>
+<body>
+  <div class="card" role="application">
+    <header>
+      <h1>Voice → Text (Detect / English / Code)</h1>
+      <div class="chip">Editable • Save as .txt</div>
+    </header>
+
+<div class="row"> <div style="min-width:230px;"> <label for="lang">Language (choose or Auto-detect)</label><br> <select id="lang">
+          <option value="auto">🌐 Auto-Detect</option>
+          <option value="auto-code">💻 Auto Code (C++, HTML, Python)</option>
+          <option value="en-US">English (US)</option>
+          <option value="en-GB">English (UK)</option>
+          <option value="bs-BA">Bosnian / Croatian / Serbian</option>
+          <option value="de-DE">German</option>
+          <option value="fr-FR">French</option>
+          <option value="es-ES">Spanish</option>
+          <option value="ru-RU">Russian</option>
+          <option value="it-IT">Italian</option>
+          <option value="pt-PT">Portuguese</option>
+          <option value="zh-CN">Chinese (Simplified)</option>
+          <option value="ja-JP">Japanese</option>
+          <option value="ko-KR">Korean</option>
+          <option value="ar-SA">Arabic</option>
+          <option value="hi-IN">Hindi</option>
+          <option value="pl-PL">Polish</option>
+          <option value="sv-SE">Swedish</option>
+          <option value="tr-TR">Turkish</option>
+          <option value="uk-UA">Ukrainian</option>
+        </select>
+      </div>
+
+      <div style="min-width:160px;">
+        <label>Code Mode</label><br>
+        <label style="display:inline-flex;align-items:center;gap:8px">
+          <input id="codeMode" type="checkbox" /> Enable (convert spoken symbols → punctuation)
+        </label>
+      </div>
+
+      <div style="min-width:220px;">
+        <label>Recognition</label><br>
+        <div class="controls">
+          <button id="startBtn">Start</button>
+          <button id="stopBtn" class="btn-ghost">Stop</button>
+          <button id="toggleCont" class="btn-ghost">Continuous: ON</button>
+          <div class="status" id="status">Idle</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row" style="margin-top:6px;">
+      <div style="flex:1">
+        <label>Transcript (editable)</label><br>
+        <textarea id="transcript" placeholder="Your speech will appear here..."></textarea>
+      </div>
+      <div style="width:260px;display:flex;flex-direction:column;gap:8px">
+        <label class="small">Actions</label>
+        <button id="copyBtn" class="btn-ghost">Copy to clipboard</button>
+        <button id="clearBtn" class="btn-ghost">Clear</button>
+        <button id="downloadBtn">Download .txt</button>
+        <button id="saveFileSystemBtn" class="btn-ghost">Save to folder (browser support)</button>
+        <div style="font-size:0.85rem;color:var(--muted);margin-top:6px">
+          Tip: Use "Code Mode" when dictating code to convert words like "open bracket", "new line", "comma", etc.
+        </div>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:6px 0" />
+        <div class="small">Detected language: <span id="detectedLang">—</span></div>
+        <div class="small">Browser support: <span id="support">Checking...</span></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="small">© 2025 DarkShadow Dev — Voice → Text</div>
+      <div>
+        <button id="insertCodeExample" class="btn-ghost">Insert Code Example</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+  Voice→Text app
+  - Uses Web Speech API (SpeechRecognition / webkitSpeechRecognition)
+  - Attempts "auto-detect" by trying multiple languages for a short sample and selecting the best result by confidence
+  - Code Mode converts common spoken code tokens into symbols
+  - Save: download or use File System Access API when available
+*/
+
+// Feature detection
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const supportEl = document.getElementById('support');
+supportEl.textContent = SpeechRecognition ? 'SpeechRecognition ✓' : 'Not supported in this browser';
+if (!SpeechRecognition) {
+  document.getElementById('status').textContent = 'SpeechRecognition not supported. Use Chrome/Edge.';
+}
+
+// UI
+const langSelect = document.getElementById('lang');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const toggleCont = document.getElementById('toggleCont');
+const statusEl = document.getElementById('status');
+const transcriptEl = document.getElementById('transcript');
+const codeModeCheckbox = document.getElementById('codeMode');
+const detectedLangEl = document.getElementById('detectedLang');
+
+let recognition = null;
+let continuous = true;
+let isRecognizing = false;
+
+// Map of spoken words → code punctuation for Code Mode
+const codeMap = {
+  "open brace": "{", "close brace": "}",
+  "open bracket": "[", "close bracket": "]",
+  "open parenthesis": "(", "close parenthesis": ")",
+  "angle bracket open": "<", "angle bracket close": ">",
+  "less than": "<", "greater than": ">",
+  "equals": "=", "double equals": "==",
+  "triple equals": "===",
+  "semicolon": ";", "colon": ":",
+  "comma": ",", "dot": ".", "period": ".",
+  "new line": "\n", "new paragraph": "\n\n", "line break": "\n",
+  "tab": "\t", "space": " ",
+  "quote": "\"", "double quote": "\"", "single quote": "'",
+  "backtick": "`", "hash": "#",
+  "slash": "/", "backslash": "\\",
+  "plus": "+", "minus": "-", "asterisk": "*", "star": "*",
+  "times": "*", "multiply": "*",
+  "divide": "/", "percent": "%",
+  "comment": "//", "block comment start": "/*", "block comment end": "*/",
+  "arrow": "=>", "fat arrow": "=>",
+  "pipe": "|", "ampersand": "&", "and sign": "&",
+  "at sign": "@",
+  "underscore": "_",
+  "question mark": "?", "exclamation": "!"
+};
+
+// Normalize mapping keys to lower
+const codeMapNormalized = {};
+for (const k in codeMap) codeMapNormalized[k.toLowerCase()] = codeMap[k];
+
+// Helper: convert words to code where possible
+function convertSpokenToCode(text){
+  // naive replacement: replace longest tokens first
+  let s = ' ' + text + ' ';
+  const tokens = Object.keys(codeMapNormalized).sort((a,b)=>b.length-a.length);
+  for (const t of tokens){
+    // simple word boundary replace
+    const rx = new RegExp('(\\b)' + escapeRegExp(t) + '(\\b)', 'ig');
+    s = s.replace(rx, (m, g1, g2) => g1 + codeMapNormalized[t] + g2);
+  }
+
+  // also remove duplicate spaces introduced
+  s = s.replace(/[ ]{2,}/g,' ');
+  // trim leading/trailing space
+  return s.trim();
+}
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Create new recognizer with options
+function createRecognition(lang){
+  if (!SpeechRecognition) return null;
+  const r = new SpeechRecognition();
+  r.interimResults = true;
+  r.continuous = continuous;
+  if (lang) r.lang = lang;
+  return r;
+}
+
+// Process results: apply code-mode conversions if necessary and append to textarea
+function handleResultEvent(event){
+  let finalTranscript = '';
+  let interimTranscript = '';
+
+  for (let i=event.resultIndex; i<event.results.length; ++i){
+    const res = event.results[i];
+    const txt = res[0].transcript;
+    if (res.isFinal){
+      finalTranscript += txt;
+    } else {
+      interimTranscript += txt;
+    }
+  }
+
+  // Display interim in a subtle way inside the textarea by appending bracketed (or just append)
+  // To keep things simple: append final transcripts and show interim in status
+  if (finalTranscript){
+    let out = finalTranscript;
+    if (codeModeCheckbox.checked || langSelect.value === 'auto-code'){
+      out = convertSpokenToCode(out);
+    }
+    // append with a space/newline depending on punctuation
+    const curr = transcriptEl.value;
+    transcriptEl.value = curr + (curr && !curr.endsWith("\n") ? "\n" : "") + out;
+  }
+
+  // Show interim
+  if (interimTranscript){
+    statusEl.textContent = 'Interim: ' + interimTranscript.slice(0,120);
+  } else {
+    statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle';
+  }
+}
+
+// Start recognition for chosen language or auto-detect
+async function startRecognition(){
+  if (!SpeechRecognition) {
+    alert('SpeechRecognition not available in this browser. Use Chrome/Edge on desktop for best results.');
+    return;
+  }
+  // If auto-detect selected, run quick detection sequence
+  const sel = langSelect.value;
+  if (sel === 'auto' || sel === 'auto-code') {
+    statusEl.textContent = 'Auto-detecting language — please speak a short sample (3 s)...';
+    const languagesToTry = ['en-US','es-ES','fr-FR','de-DE','bs-BA','ru-RU','pt-PT'];
+    // If auto-code, prefer code mode mapping
+    const preferCode = (sel === 'auto-code');
+    try {
+      const result = await tryLanguagesSample(languagesToTry, 1000);
+      if (result && result.bestLang){
+        detectedLangEl.textContent = result.bestLang + (preferCode ? ' (code preferred)' : '');
+        // start continuous recognition with that language
+        initAndStart(result.bestLang, preferCode);
+        return;
+      } else {
+        // fallback to en-US
+        detectedLangEl.textContent = 'en-US (fallback)';
+        initAndStart('en-US', preferCode);
+        return;
+      }
+    } catch(err){
+      console.error(err);
+      detectedLangEl.textContent = 'unknown';
+      initAndStart('en-US', false);
+      return;
+    }
+  } else {
+    detectedLangEl.textContent = sel;
+    initAndStart(sel, false);
+  }
+}
+
+// Run a short sample for each language and return the one with highest confidence
+function tryLanguagesSample(langArray, durationMs){
+  return new Promise((resolve, reject) => {
+    if (!SpeechRecognition) return resolve(null);
+    let best = {lang:null,confidence:-1,transcript:''};
+    let i=0;
+    const runOne = () => {
+      if (i >= langArray.length) {
+        resolve(best);
+        return;
+      }
+      const lang = langArray[i++];
+      const r = createRecognition(lang);
+      let done = false;
+      let timeoutId = null;
+      r.onresult = (ev)=> {
+        // pick first final result confidence if available
+        for (let k=0;k<ev.results.length;k++){
+          if (ev.results[k].isFinal){
+            const conf = ev.results[k][0].confidence || 0;
+            const txt = ev.results[k][0].transcript || '';
+            if (conf > best.confidence){
+              best = {lang,confidence:conf,transcript:txt};
+            }
+            break;
+          }
+        }
+      };
+      r.onerror = (e)=> {
+        // ignore and try next
+        clearTimeout(timeoutId);
+        r.stop();
+        setTimeout(runOne, 250);
+      };
+      r.onend = ()=> {
+        if (done) return;
+        done = true;
+        clearTimeout(timeoutId);
+        // try next
+        setTimeout(runOne, 150);
+      };
+      try {
+        r.start();
+        // stop after durationMs
+        timeoutId = setTimeout(()=>{
+          try{ r.stop(); } catch(e){}
+        }, durationMs);
+      } catch(err){
+        // cannot start — skip to next
+        clearTimeout(timeoutId);
+        setTimeout(runOne,100);
+      }
+    };
+    runOne();
+  });
+}
+
+function initAndStart(lang, preferCode){
+  // stop any existing recognition
+  stopRecognition();
+  recognition = createRecognition(lang);
+  if (!recognition) return;
+  recognition.interimResults = true;
+  recognition.continuous = continuous;
+  recognition.lang = lang;
+  isRecognizing = true;
+  statusEl.textContent = 'Listening…';
+  detectedLangEl.textContent = lang + (preferCode ? ' (code mode)' : '');
+
+  recognition.onresult = handleResultEvent;
+  recognition.onend = function(){
+    isRecognizing = false;
+    statusEl.textContent = 'Idle';
+    // if continuous is ON, restart automatically
+    if (continuous){
+      // restart after tiny delay to avoid immediate loop errors
+      setTimeout(()=>{ try{ recognition.start(); isRecognizing=true; statusEl.textContent='Listening…'; } catch(e){} }, 250);
+    }
+  };
+  recognition.onerror = function(e){
+    console.error('Recognition error', e);
+    statusEl.textContent = 'Error: ' + (e.error || 'unknown');
+  };
+
+  try {
+    recognition.start();
+  } catch(err){
+    console.error(err);
+  }
+}
+
+function stopRecognition(){
+  if (recognition){
+    try { recognition.onresult = null; recognition.onend = null; recognition.onerror = null; recognition.stop(); } catch(e){}
+    recognition = null;
+  }
+  isRecognizing = false;
+  statusEl.textContent = 'Stopped';
+}
+
+// Buttons
+startBtn.addEventListener('click', ()=> {
+  startRecognition();
+});
+stopBtn.addEventListener('click', ()=> {
+  continuous = false;
+  document.getElementById('toggleCont').textContent = 'Continuous: OFF';
+  stopRecognition();
+});
+
+toggleCont.addEventListener('click', ()=> {
+  continuous = !continuous;
+  toggleCont.textContent = 'Continuous: ' + (continuous ? 'ON' : 'OFF');
+  if (recognition) { recognition.continuous = continuous; }
+});
+
+// Copy, clear
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(transcriptEl.value);
+    statusEl.textContent = 'Copied to clipboard ✓';
+    setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+  }catch(e){
+    alert('Clipboard failed. You can manually select and copy.');
+  }
+});
+document.getElementById('clearBtn').addEventListener('click', ()=> {
+  if (!confirm('Clear all transcript text?')) return;
+  transcriptEl.value = '';
+});
+
+// Insert code example
+document.getElementById('insertCodeExample').addEventListener('click', ()=>{
+  const example = `function greet(name) {
+\tconsole.log("Hello, " + name + "!");
+}\n\ngreet("world");\n`;
+  transcriptEl.value += (transcriptEl.value?'\n':'') + example;
+  statusEl.textContent = 'Inserted example';
+  setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+});
+
+// Download .txt (standard)
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const text = transcriptEl.value || '';
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const filename = prompt('Filename (without extension):','transcript') || 'transcript';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+  statusEl.textContent = 'Downloaded ' + a.download;
+  setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+});
+
+// Save using File System Access API (write to chosen folder — user must grant permission)
+const saveFSBtn = document.getElementById('saveFileSystemBtn');
+saveFSBtn.addEventListener('click', async ()=>{
+  if (!('showSaveFilePicker' in window) && !('chooseFileSystemEntries' in window)) {
+    alert('Your browser does not support the File System Access API.\nUse "Download .txt" instead (it saves to Downloads).');
+    return;
+  }
+  try{
+    const opts = {types:[ { description:'Text file', accept: {'text/plain':['.txt']} } ]};
+    // modern API
+    if (window.showSaveFilePicker){
+      const handle = await window.showSaveFilePicker({...opts, suggestedName:'transcript.txt'});
+      const writable = await handle.createWritable();
+      await writable.write(transcriptEl.value || '');
+      await writable.close();
+      statusEl.textContent = 'Saved via File System API ✓';
+    } else if (window.chooseFileSystemEntries){
+      // older chrome origin trial
+      const handle = await window.chooseFileSystemEntries({type: 'save-file', accepts: [{description:'Text',extensions:['txt'],mimeTypes:['text/plain']}]});
+      const writable = await handle.createWriter();
+      await writable.write(0, transcriptEl.value || '');
+      await writable.close();
+      statusEl.textContent = 'Saved via legacy API ✓';
+    }
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = 'Save cancelled or failed';
+  }
+  setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+});
+
+// Convert Code Mode on-the-fly as user types (optional): if code mode is checked, we can replace detected spoken tokens when user blurs or presses ctrl+enter
+transcriptEl.addEventListener('keydown', (e)=>{
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    // quick convert whole textarea
+    if (codeModeCheckbox.checked){
+      transcriptEl.value = convertSpokenToCode(transcriptEl.value);
+      statusEl.textContent = 'Applied Code Mode conversion to whole text';
+      setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+    }
+  }
+});
+
+// If recognition produced final transcripts while Code Mode was ON, conversion already applied in handler.
+// But give user ability to apply conversion to whole textarea manually:
+const applyCodeConversion = ()=> {
+  transcriptEl.value = convertSpokenToCode(transcriptEl.value);
+  statusEl.textContent = 'Converted text with Code Mode';
+  setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+};
+
+// When codeMode toggles and user wants conversion, we mention the shortcut
+codeModeCheckbox.addEventListener('change', ()=>{
+  if (codeModeCheckbox.checked){
+    statusEl.textContent = 'Code Mode ON — press Ctrl+Enter to convert whole text';
+  } else {
+    statusEl.textContent = 'Code Mode OFF';
+  }
+  setTimeout(()=>statusEl.textContent = isRecognizing ? 'Listening…' : 'Idle', 1200);
+});
+
+// If user chooses manual language, stop any running recognizer and show selected language
+langSelect.addEventListener('change', ()=>{
+  stopRecognition();
+  const val = langSelect.value;
+  if (val !== 'auto' && val !== 'auto-code') detectedLangEl.textContent = val;
+  else detectedLangEl.textContent = '—';
+});
+
+// Clean up on unload
+window.addEventListener('unload', ()=> {
+  stopRecognition();
+});
+
+</script>
+</body>
+</html>
